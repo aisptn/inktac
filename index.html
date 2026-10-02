@@ -18,12 +18,12 @@
     <link rel="stylesheet" href="./style.css" />
     <style>
       @page {
-        size: 210mm 148mm;
+        size: 297mm 210mm;
         margin: 0;
       }
       #app-root {
-        max-width: 210mm;
-        max-height: 148mm;
+        max-width: 297mm;
+        max-height: 210mm;
         width: 100%;
         height: 100%;
       }
@@ -40,13 +40,15 @@
       })();
     </script>
   </head>
-  <body class="h-full w-full overflow-hidden bg-slate-200/70 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased flex items-center justify-center p-0 sm:p-2 md:p-3">
-    <div id="app-root" class="relative h-full w-full overflow-hidden flex flex-col font-sans select-none bg-slate-50 dark:bg-slate-900 sm:rounded-xl sm:border sm:border-slate-300/80 dark:sm:border-white/10 sm:shadow-2xl">
-      <!-- Full-bleed background image with clean non-filtering scrim -->
-      <div id="bg-container" class="absolute inset-0 z-0 overflow-hidden pointer-events-none hidden">
-        <img id="bg-img" alt="Background preview" class="w-full h-full object-cover" />
-        <div class="absolute inset-0 bg-slate-900/20 dark:bg-black/40"></div>
-      </div>
+  <body class="h-full w-full overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased flex items-center justify-center">
+    <!-- Full-bleed background image with clean non-filtering scrim - always fullscreen across viewport -->
+    <div id="bg-container" class="fixed inset-0 z-0 overflow-hidden pointer-events-none hidden">
+      <img id="bg-img" alt="Background preview" class="w-full h-full object-cover" />
+      <div class="absolute inset-0 bg-slate-900/20 dark:bg-black/40"></div>
+    </div>
+
+    <!-- App Stage: bounded to A4 landscape (297mm x 210mm) -->
+    <div id="app-root" class="relative h-full w-full overflow-hidden flex flex-col font-sans select-none">
 
       <!-- Hidden file input -->
       <input
@@ -371,7 +373,7 @@
       </div>
 
       <!-- Main Viewport Stage - Fullscreen with zero wasted empty space -->
-      <main class="relative z-10 flex-1 flex flex-col items-center justify-between p-2.5 sm:p-3 w-full max-w-5xl mx-auto h-full overflow-hidden">
+      <main class="relative z-10 flex-1 flex flex-col items-center justify-between p-2.5 sm:p-4 w-full h-full overflow-hidden">
         <!-- Error Banner -->
         <div id="error-banner" class="strict-radius w-full mb-2 p-2 bg-rose-50/80 dark:bg-rose-950/60 backdrop-blur-[2px] border border-rose-300 dark:border-rose-500/40 hidden items-center gap-2 text-xs text-rose-800 dark:text-rose-200 flex-shrink-0 shadow-sm">
           <svg class="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -381,12 +383,12 @@
         </div>
 
         <!-- 1. Empty State Landing (Dropzone & Test Samples) -->
-        <div id="empty-state" class="w-full h-full flex-1 flex flex-col justify-between py-1 sm:py-2 space-y-2 sm:space-y-3">
-          <div class="text-center space-y-0.5 pt-0.5">
-            <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+        <div id="empty-state" class="w-full h-full flex-1 flex flex-col justify-between py-1 sm:py-3 space-y-3 sm:space-y-4">
+          <div class="text-center space-y-1 pt-1">
+            <h1 class="text-xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               Image Pixel &amp; Channel Analyzer
             </h1>
-            <p class="text-xs text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
               Sum the average combined pixel density and inspect the channel breakdown across RGBA (0%–100%) and CMYK (0%–400%) color profiles.
             </p>
           </div>
@@ -394,10 +396,10 @@
           <!-- Dropzone -->
           <div
             id="dropzone"
-            class="card-glass w-full flex-1 border-2 border-dashed border-slate-300/80 dark:border-slate-700/80 hover:border-accent flex flex-col items-center justify-center p-3 sm:p-5 text-center cursor-pointer transition-all duration-150 shadow-md min-h-[140px]"
+            class="card-glass w-full flex-1 border-2 border-dashed border-slate-300/80 dark:border-slate-700/80 hover:border-accent flex flex-col items-center justify-center p-4 sm:p-6 text-center cursor-pointer transition-all duration-150 shadow-md min-h-[160px]"
           >
-            <div class="strict-radius w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-2 bg-accent-subtle border border-accent-subtle flex items-center justify-center text-accent">
-              <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <div class="strict-radius w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 bg-accent-subtle border border-accent-subtle flex items-center justify-center text-accent">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -407,9 +409,9 @@
             <button
               id="btn-pick-image"
               type="button"
-              class="strict-radius inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-semibold bg-accent hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+              class="strict-radius inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-accent hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
             >
-              <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
@@ -417,31 +419,31 @@
               <span>Pick Image</span>
             </button>
 
-            <p class="text-xs text-slate-600 dark:text-slate-300 mt-2 font-medium">
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-3 font-medium">
               Drop image here, browse files, or paste from clipboard (Ctrl+V)
             </p>
-            <p class="text-[10px] sm:text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-0.5">
+            <p class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-1">
               Supports JPEG (CMYK / ICC), PNG, TIFF &amp; WebP
             </p>
           </div>
 
           <!-- Quick Test Samples -->
-          <div class="w-full pt-0.5 pb-0.5">
-            <span class="text-[10px] sm:text-[11px] font-mono uppercase tracking-wider text-slate-600 dark:text-slate-400 block mb-1 font-medium text-center">
+          <div class="w-full pt-1 pb-1">
+            <span class="text-[11px] font-mono uppercase tracking-wider text-slate-600 dark:text-slate-400 block mb-1.5 font-medium text-center">
               Or test with calibrated target:
             </span>
-            <div class="flex flex-wrap justify-center gap-2">
+            <div class="flex flex-wrap justify-center gap-2.5">
               <button
                 id="btn-sample-cmyk"
                 type="button"
-                class="card-glass px-3.5 py-1.5 text-xs font-mono border border-white/40 dark:border-white/10 hover:border-accent text-slate-800 dark:text-slate-200 transition-colors shadow-xs"
+                class="card-glass px-4 py-1.5 text-xs font-mono border border-white/40 dark:border-white/10 hover:border-accent text-slate-800 dark:text-slate-200 transition-colors shadow-xs"
               >
                 CMYK Target (0%–400%)
               </button>
               <button
                 id="btn-sample-rgb"
                 type="button"
-                class="card-glass px-3.5 py-1.5 text-xs font-mono border border-white/40 dark:border-white/10 hover:border-accent text-slate-800 dark:text-slate-200 transition-colors shadow-xs"
+                class="card-glass px-4 py-1.5 text-xs font-mono border border-white/40 dark:border-white/10 hover:border-accent text-slate-800 dark:text-slate-200 transition-colors shadow-xs"
               >
                 RGB Spectrum (0%–100%)
               </button>
@@ -450,11 +452,11 @@
         </div>
 
         <!-- 2. Active Results: Truly Fullscreen, filling vertical & horizontal viewport -->
-        <div id="results-state" class="w-full h-full flex-1 hidden flex-col justify-between gap-2 sm:gap-2.5">
+        <div id="results-state" class="w-full h-full flex-1 hidden flex-col justify-between gap-2.5 sm:gap-3">
           <!-- Top Bar Card: Identity & Mode Switcher -->
-          <div class="card-glass flex-shrink-0 p-2 sm:p-2.5 border border-white/40 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-2.5 shadow-lg">
+          <div class="card-glass flex-shrink-0 p-2.5 sm:p-3 border border-white/40 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shadow-lg">
             <div class="flex items-center gap-2.5 min-w-0">
-              <img id="thumb-img" alt="Thumbnail" class="inner-radius w-8 h-8 sm:w-10 sm:h-10 object-cover border border-white/40 dark:border-white/20 shadow-xs flex-shrink-0" />
+              <img id="thumb-img" alt="Thumbnail" class="inner-radius w-9 h-9 sm:w-10 sm:h-10 object-cover border border-white/40 dark:border-white/20 shadow-xs flex-shrink-0" />
               <div class="min-w-0 flex-1">
                 <div id="meta-filename" class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate"></div>
                 <div class="text-[10px] sm:text-[11px] font-mono text-slate-700 dark:text-slate-300 flex items-center gap-1.5 mt-0.5">
@@ -485,7 +487,7 @@
           </div>
 
           <!-- 1. Hero Card: Flex-1, commanding the vertical screen proportionally -->
-          <div class="card-glass flex-1 flex flex-col justify-center items-center p-2 sm:p-3 border border-white/40 dark:border-white/10 shadow-lg text-center space-y-1 sm:space-y-1.5">
+          <div class="card-glass flex-1 flex flex-col justify-center items-center p-3 sm:p-4 border border-white/40 dark:border-white/10 shadow-lg text-center space-y-1.5 sm:space-y-2">
             <div class="h-4 flex items-center justify-center">
               <span id="hero-title" class="text-xs sm:text-sm uppercase font-mono tracking-wider text-slate-700 dark:text-slate-300 font-bold truncate">
                 Average Combined TAC
@@ -493,10 +495,10 @@
             </div>
 
             <div class="flex items-baseline justify-center gap-1.5">
-              <span id="hero-val" class="text-4xl sm:text-5xl font-mono font-bold text-slate-950 dark:text-white tracking-tight drop-shadow-xs">
+              <span id="hero-val" class="text-5xl sm:text-6xl font-mono font-bold text-slate-950 dark:text-white tracking-tight drop-shadow-xs">
                 0.00
               </span>
-              <span class="text-xl sm:text-2xl font-mono font-bold text-accent">
+              <span class="text-2xl sm:text-3xl font-mono font-bold text-accent">
                 %
               </span>
               <span id="hero-scale" class="text-xs sm:text-sm font-mono font-medium text-slate-600 dark:text-slate-400 ml-1">
@@ -505,16 +507,16 @@
             </div>
 
             <!-- Progress bar -->
-            <div class="strict-radius w-full max-w-md mx-auto h-2 sm:h-2.5 bg-black/10 dark:bg-black/50 overflow-hidden border border-white/30 dark:border-white/10">
+            <div class="strict-radius w-full max-w-md mx-auto h-2.5 sm:h-3 bg-black/10 dark:bg-black/50 overflow-hidden border border-white/30 dark:border-white/10">
               <div id="hero-progress-fill" class="strict-radius h-full transition-all duration-300 bg-gradient-to-r from-amber-500 to-rose-500" style="width: 0%;"></div>
             </div>
 
-            <div id="hero-pixels" class="text-[10px] sm:text-[11px] font-mono font-medium text-slate-700 dark:text-slate-300 truncate"></div>
+            <div id="hero-pixels" class="text-[11px] sm:text-xs font-mono font-medium text-slate-700 dark:text-slate-300 truncate"></div>
           </div>
 
           <!-- 2. Channel Breakdown Card: Flex-1, commanding vertical screen with loosened padding -->
-          <div class="card-glass flex-1 flex flex-col justify-between p-2 sm:p-3 border border-white/40 dark:border-white/10 shadow-lg gap-2">
-            <div class="flex items-center justify-between gap-3 sm:gap-4 pb-1.5 sm:pb-2 border-b border-black/10 dark:border-white/10">
+          <div class="card-glass flex-1 flex flex-col justify-between p-3 sm:p-4 border border-white/40 dark:border-white/10 shadow-lg gap-2 sm:gap-2.5">
+            <div class="flex items-center justify-between gap-3 sm:gap-4 pb-2 sm:pb-2.5 border-b border-black/10 dark:border-white/10">
               <h2 class="uppercase font-mono tracking-wider text-slate-900 dark:text-slate-100 font-bold text-xs sm:text-sm whitespace-nowrap">
                 Channel Breakdown
               </h2>
@@ -524,7 +526,7 @@
             </div>
 
             <!-- 4 Channels Grid -->
-            <div id="channels-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 flex-1 items-stretch"></div>
+            <div id="channels-grid" class="grid grid-cols-1 sm:grid-cols-4 gap-2.5 sm:gap-3 flex-1 items-stretch"></div>
           </div>
         </div>
       </main>
