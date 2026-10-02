@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en" class="h-full overflow-hidden">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8fafc" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#020617" />
+    <title>InkTAC · Pixel &amp; Channel Analyzer</title>
+    <meta name="description" content="InkTAC: Professional image pixel summation and total area coverage (TAC) analyzer across combined RGB (0%–100%) and CMYK (0%–400%) color profiles." />
+    <meta property="og:title" content="InkTAC · Pixel &amp; Channel Analyzer" />
+    <meta property="og:description" content="InkTAC: Professional image pixel summation and total area coverage (TAC) analyzer across combined RGB (0%–100%) and CMYK (0%–400%) color profiles." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css" />
+    <script>
+      (function() {
+        try {
+          if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="h-full w-full overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased">
+    <div id="app-root" class="relative h-full w-full overflow-hidden flex flex-col font-sans select-none">
+      <!-- Full-bleed background image with clean non-filtering scrim -->
+      <div id="bg-container" class="fixed inset-0 z-0 overflow-hidden pointer-events-none hidden">
+        <img id="bg-img" alt="Background preview" class="w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-slate-900/20 dark:bg-black/40"></div>
+      </div>
+
+      <!-- Hidden file input -->
+      <input
+        id="file-input"
+        type="file"
+        accept="image/jpeg,image/png,image/tiff,image/webp,.jpg,.jpeg,.png,.tif,.tiff"
+        class="hidden"
+      />
+
+      <!-- Fixed Header -->
+      <header class="card-glass relative z-20 flex-shrink-0 flex items-center justify-between px-3 sm:px-4 py-2 border-b border-white/40 dark:border-white/10 shadow-xs">
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button id="btn-brand" class="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white hover:text-accent transition-colors flex items-center gap-1.5">
+            <span class="tracking-tight font-extrabold text-base sm:text-lg">InkTAC</span>
+          </button>
+          <span class="hidden sm:inline text-xs text-slate-700 dark:text-slate-300 font-mono">
+            Combined Pixel &amp; Channel Analyzer
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <!-- Debug toggle button (visible only when enabled via URL, e.g. ?debug=true or #debug) -->
+          <button
+            id="btn-toggle-debug"
+            type="button"
+            title="Toggle Debug Controls (Accent Colour, Opacity, Blur, Radius, Text Transform)"
+            class="hidden strict-radius items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-semibold border text-slate-700 dark:text-slate-300 bg-black/5 dark:bg-white/10 border-white/30 dark:border-white/10 hover:bg-black/10 dark:hover:bg-white/15 transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+              <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+              <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
+            </svg>
+            <span>Debug</span>
+          </button>
+
+          <!-- Active actions (Pick Another, Clear) -->
+          <div id="header-active-actions" class="hidden items-center gap-1.5 sm:gap-2">
+            <button
+              id="btn-pick-another"
+              class="strict-radius flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-slate-800 dark:text-slate-100 bg-white/60 dark:bg-slate-800/60 hover:bg-white/80 dark:hover:bg-slate-700/80 border border-white/40 dark:border-white/10 shadow-xs transition-colors"
+            >
+              <svg class="w-3.5 h-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span class="hidden xs:inline">Pick Another</span>
+            </button>
+            <button
+              id="btn-clear"
+              title="Clear image"
+              class="strict-radius p-1 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Floating Debug Controls Panel -->
+      <div
+        id="debug-panel"
+        class="card-glass fixed top-12 right-2 sm:right-6 z-30 w-72 sm:w-80 p-3 sm:p-4 border border-white/50 dark:border-white/15 shadow-xl space-y-3 font-mono text-xs hidden"
+      >
+        <div class="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-2">
+          <div class="flex items-center gap-1.5 font-bold text-slate-900 dark:text-white">
+            <svg class="w-3.5 h-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
+              <line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line>
+              <line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>
+            </svg>
+            <span>Appearance Debug</span>
+          </div>
+          <div class="flex items-center gap-1">
+            <button id="btn-debug-reset" type="button" title="Reset all debug settings to defaults" class="inner-radius p-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+              </svg>
+            </button>
+            <button id="btn-debug-close" type="button" title="Close debug panel" class="inner-radius p-1 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Accent Colour Picker Section -->
+        <div class="space-y-2 border-b border-black/10 dark:border-white/10 pb-3">
+          <div class="flex items-center justify-between text-slate-700 dark:text-slate-300 text-[11px]">
+            <span class="font-semibold flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+                <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+                <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2Z"></path>
+              </svg>
+              <span>Custom Accent Colour</span>
+            </span>
+            <span id="label-debug-accent" class="font-bold text-accent uppercase tracking-wider text-[11px]">#06B6D4</span>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- Native color picker wrapper with live preview swatch -->
+            <label
+              title="Click to open color picker"
+              class="strict-radius relative flex items-center justify-center w-8 h-8 cursor-pointer border border-white/40 dark:border-white/20 shadow-xs overflow-hidden shrink-0 group focus-within:ring-2 focus-within:ring-[var(--accent-color)]"
+            >
+              <input
+                id="picker-accent"
+                type="color"
+                value="#06b6d4"
+                class="absolute -inset-4 w-16 h-16 opacity-0 cursor-pointer"
+                aria-label="Accent colour picker"
+              />
+              <span id="preview-accent-swatch" class="w-full h-full rounded transition-transform group-hover:scale-110" style="background-color: var(--accent-color);"></span>
+            </label>
+
+            <!-- Text Hex input with # prefix -->
+            <div class="relative flex-1">
+              <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-xs">#</span>
+              <input
+                id="input-accent-hex"
+                type="text"
+                maxlength="7"
+                value="06B6D4"
+                placeholder="06B6D4"
+                spellcheck="false"
+                class="strict-radius w-full pl-6 pr-2 py-1.5 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 text-xs font-mono font-bold text-slate-800 dark:text-slate-100 uppercase focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)]"
+                title="Enter Hex colour code"
+              />
+            </div>
+
+            <!-- Eye dropper button if supported -->
+            <button
+              id="btn-eyedropper"
+              type="button"
+              title="Sample colour from screen or image (EyeDropper)"
+              class="strict-radius p-1.5 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-300 border border-black/10 dark:border-white/15 transition-colors shrink-0 flex items-center justify-center"
+            >
+              <svg class="w-4 h-4 text-slate-700 dark:text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"></path>
+                <path d="m5 2 5 5"></path>
+                <path d="m2 13 3 3"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Quick Palette Presets -->
+          <div class="pt-0.5 space-y-1">
+            <div class="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400">
+              <span>Quick Presets</span>
+              <span class="text-[9px] uppercase tracking-wider text-slate-400">8 Curated</span>
+            </div>
+            <div id="accent-presets" class="grid grid-cols-8 gap-1.5">
+              <!-- Rendered presets -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Opacity Math Input & Slider -->
+        <div class="space-y-1.5 border-b border-black/10 dark:border-white/10 pb-3">
+          <div class="flex items-center justify-between text-slate-700 dark:text-slate-300 text-[11px]">
+            <span class="font-semibold flex items-center gap-1">
+              <span>Opacity</span>
+              <span class="text-[10px] text-slate-400 dark:text-slate-500 font-normal font-mono">(norm. to 1)</span>
+            </span>
+            <div class="flex items-center gap-1.5 font-mono">
+              <span id="label-debug-opacity-val" class="text-[10px] text-slate-500 dark:text-slate-400">0.50</span>
+              <span id="label-debug-opacity" class="font-bold text-accent text-[11px]">50%</span>
+            </div>
+          </div>
+
+          <!-- Math Expression Input Field with Live Evaluation Badge -->
+          <div class="relative flex items-center">
+            <input
+              id="input-opacity-math"
+              type="text"
+              value="0.5"
+              placeholder="e.g. 1/2, 3/4, 1/3, 1-0.2"
+              spellcheck="false"
+              class="strict-radius w-full pl-2.5 pr-20 py-1.5 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 text-xs font-mono font-bold text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-[var(--accent-color)] transition-all"
+              title="Enter any mathematical expression normalized to 1 (e.g. 1/2, 3/4, 1/3, 1-0.2, 50%, sqrt(2)/2)"
+            />
+            <div class="absolute right-1.5 flex items-center gap-1 text-[10px] font-mono pointer-events-none select-none">
+              <span id="badge-opacity-eval" class="px-1.5 py-0.5 rounded bg-black/10 dark:bg-white/10 text-slate-600 dark:text-slate-300 font-semibold">= 0.50</span>
+            </div>
+          </div>
+
+          <!-- Quick fraction preset chips -->
+          <div class="flex items-center justify-between gap-1 pt-0.5">
+            <span class="text-[9px] uppercase tracking-wider text-slate-400 font-mono">Presets:</span>
+            <div class="flex items-center gap-1">
+              <button type="button" data-opacity-preset="0.2" class="btn-opacity-chip inner-radius px-1.5 py-0.5 text-[10px] font-mono bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-300 transition-colors">1/5</button>
+              <button type="button" data-opacity-preset="1/4" class="btn-opacity-chip inner-radius px-1.5 py-0.5 text-[10px] font-mono bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-300 transition-colors">1/4</button>
+              <button type="button" data-opacity-preset="1/3" class="btn-opacity-chip inner-radius px-1.5 py-0.5 text-[10px] font-mono bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-300 transition-colors">1/3</button>
+              <button type="button" data-opacity-preset="1/2" class="btn-opacity-chip inner-radius px-1.5 py-0.5 text-[10px] font-mono bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-300 transition-colors">1/2</button>
+              <button type="button" data-opacity-preset="2/3" class="btn-opacity-chip inner-radius px-1.5 py-0.5 text-[10px] font-mono bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-300 transition-colors">2/3</button>
+              <button type="button" data-opacity-preset="3/4" class="btn-opacity-chip inner-radius px-1.5 py-0.5 text-[10px] font-mono bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-300 transition-colors">3/4</button>
+              <button type="button" data-opacity-preset="1" class="btn-opacity-chip inner-radius px-1.5 py-0.5 text-[10px] font-mono bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/15 text-slate-700 dark:text-slate-300 transition-colors">1</button>
+            </div>
+          </div>
+
+          <!-- Synced Slider (0 to 1000) -->
+          <input
+            id="slider-opacity"
+            type="range"
+            min="0"
+            max="1000"
+            value="500"
+            class="strict-radius w-full h-1.5 bg-black/15 dark:bg-white/20 appearance-none cursor-pointer"
+            title="Slide opacity (normalized 0 to 1)"
+          />
+        </div>
+
+        <!-- Blur Slider -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between text-slate-700 dark:text-slate-300 text-[11px]">
+            <span>Backdrop Blur</span>
+            <span id="label-debug-blur" class="font-bold text-accent">12px</span>
+          </div>
+          <input
+            id="slider-blur"
+            type="range"
+            min="0"
+            max="30"
+            value="12"
+            class="strict-radius w-full h-1.5 bg-black/15 dark:bg-white/20 appearance-none cursor-pointer"
+          />
+          <!-- Live swatch showing the current blur level on a test pattern -->
+          <div class="relative h-6 w-full rounded overflow-hidden border border-black/15 dark:border-white/15 select-none" title="Live blur test pattern">
+            <!-- Background pattern underneath -->
+            <div class="absolute inset-0 bg-gradient-to-r from-cyan-500 via-pink-500 to-amber-400 opacity-90 flex items-center justify-around font-mono font-bold text-[9px] text-white">
+              <span>BLUR</span><span>TEST</span><span>1234</span><span>#TAC</span>
+            </div>
+            <!-- Glass overlay demonstrating live blur -->
+            <div class="card-glass absolute inset-0"></div>
+          </div>
+        </div>
+
+        <!-- Border Radius Slider -->
+        <div class="space-y-1 border-b border-black/10 dark:border-white/10 pb-3">
+          <div class="flex justify-between text-slate-700 dark:text-slate-300 text-[11px]">
+            <span>Border Radius (All Corners)</span>
+            <span id="label-debug-radius" class="font-bold text-accent">12px</span>
+          </div>
+          <input
+            id="slider-radius"
+            type="range"
+            min="0"
+            max="32"
+            value="12"
+            class="strict-radius w-full h-1.5 bg-black/15 dark:bg-white/20 appearance-none cursor-pointer"
+          />
+        </div>
+
+        <!-- Text Transform Debug Control -->
+        <div class="space-y-1.5 pt-0.5">
+          <div class="flex items-center justify-between text-slate-700 dark:text-slate-300 text-[11px]">
+            <span class="font-semibold flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                <line x1="9" y1="20" x2="15" y2="20"></line>
+                <line x1="12" y1="4" x2="12" y2="20"></line>
+              </svg>
+              <span>Text Transform</span>
+            </span>
+            <span id="label-debug-transform" class="font-bold text-accent font-mono text-[11px] capitalize">Default</span>
+          </div>
+
+          <!-- Segmented Button Group for Text Transform -->
+          <div class="strict-radius flex flex-wrap gap-1 p-0.5 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-white/15 text-[10px] sm:text-[11px] font-mono">
+            <button
+              type="button"
+              data-text-transform="none"
+              class="btn-text-transform inner-radius flex-1 min-w-[50px] py-1 px-1.5 text-center font-semibold transition-all cursor-pointer bg-white dark:bg-white/20 text-slate-900 dark:text-white shadow-xs"
+              title="Default (Author case)"
+            >
+              Default
+            </button>
+            <button
+              type="button"
+              data-text-transform="lowercase"
+              class="btn-text-transform inner-radius flex-1 min-w-[50px] py-1 px-1.5 text-center font-semibold transition-all cursor-pointer text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white lowercase"
+              title="All lowercase"
+            >
+              lower
+            </button>
+            <button
+              type="button"
+              data-text-transform="uppercase"
+              class="btn-text-transform inner-radius flex-1 min-w-[50px] py-1 px-1.5 text-center font-semibold transition-all cursor-pointer text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white uppercase"
+              title="ALL UPPERCASE"
+            >
+              UPPER
+            </button>
+            <button
+              type="button"
+              data-text-transform="capitalize"
+              class="btn-text-transform inner-radius flex-1 min-w-[50px] py-1 px-1.5 text-center font-semibold transition-all cursor-pointer text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white capitalize"
+              title="Capitalize Words"
+            >
+              Title
+            </button>
+            <button
+              type="button"
+              data-text-transform="small-caps"
+              class="btn-text-transform inner-radius flex-1 min-w-[50px] py-1 px-1.5 text-center font-semibold transition-all cursor-pointer text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              style="font-variant: small-caps;"
+              title="Small-Caps"
+            >
+              Small
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Viewport Stage - Fullscreen with zero wasted empty space -->
+      <main class="relative z-10 flex-1 flex flex-col items-center justify-between p-2.5 sm:p-4 w-full max-w-5xl mx-auto h-full">
+        <!-- Error Banner -->
+        <div id="error-banner" class="strict-radius w-full mb-2 p-2 bg-rose-50/80 dark:bg-rose-950/60 backdrop-blur-[2px] border border-rose-300 dark:border-rose-500/40 hidden items-center gap-2 text-xs text-rose-800 dark:text-rose-200 flex-shrink-0 shadow-sm">
+          <svg class="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span id="error-text"></span>
+        </div>
+
+        <!-- 1. Empty State Landing (Dropzone & Test Samples) -->
+        <div id="empty-state" class="w-full h-full flex-1 flex flex-col justify-between py-1 sm:py-3 space-y-3 sm:space-y-4">
+          <div class="text-center space-y-1 pt-1">
+            <h1 class="text-xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Image Pixel &amp; Channel Analyzer
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto">
+              Sum the average combined pixel density and inspect the channel breakdown across RGBA (0%–100%) and CMYK (0%–400%) color profiles.
+            </p>
+          </div>
+
+          <!-- Dropzone -->
+          <div
+            id="dropzone"
+            class="card-glass w-full flex-1 border-2 border-dashed border-slate-300/80 dark:border-slate-700/80 hover:border-accent flex flex-col items-center justify-center p-4 sm:p-6 text-center cursor-pointer transition-all duration-150 shadow-md"
+          >
+            <div class="strict-radius w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-3 bg-accent-subtle border border-accent-subtle flex items-center justify-center text-accent">
+              <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+
+            <button
+              id="btn-pick-image"
+              type="button"
+              class="strict-radius inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-accent hover:opacity-90 transition-opacity shadow-sm cursor-pointer"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <span>Pick Image</span>
+            </button>
+
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-3 font-medium">
+              Drop image here, browse files, or paste from clipboard (Ctrl+V)
+            </p>
+            <p class="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-1">
+              Supports JPEG (CMYK / ICC), PNG, TIFF &amp; WebP
+            </p>
+          </div>
+
+          <!-- Quick Test Samples -->
+          <div class="w-full pt-1 pb-1">
+            <span class="text-[11px] font-mono uppercase tracking-wider text-slate-600 dark:text-slate-400 block mb-1.5 font-medium text-center">
+              Or test with calibrated target:
+            </span>
+            <div class="flex flex-wrap justify-center gap-2.5">
+              <button
+                id="btn-sample-cmyk"
+                type="button"
+                class="card-glass px-4 py-1.5 text-xs font-mono border border-white/40 dark:border-white/10 hover:border-accent text-slate-800 dark:text-slate-200 transition-colors shadow-xs"
+              >
+                CMYK Target (0%–400%)
+              </button>
+              <button
+                id="btn-sample-rgb"
+                type="button"
+                class="card-glass px-4 py-1.5 text-xs font-mono border border-white/40 dark:border-white/10 hover:border-accent text-slate-800 dark:text-slate-200 transition-colors shadow-xs"
+              >
+                RGB Spectrum (0%–100%)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Active Results: Truly Fullscreen, filling vertical & horizontal viewport -->
+        <div id="results-state" class="w-full h-full flex-1 hidden flex-col justify-between gap-2.5 sm:gap-3.5">
+          <!-- Top Bar Card: Identity & Mode Switcher -->
+          <div class="card-glass flex-shrink-0 p-2.5 sm:p-3 border border-white/40 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 shadow-lg">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <img id="thumb-img" alt="Thumbnail" class="inner-radius w-9 h-9 sm:w-10 sm:h-10 object-cover border border-white/40 dark:border-white/20 shadow-xs flex-shrink-0" />
+              <div class="min-w-0 flex-1">
+                <div id="meta-filename" class="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate"></div>
+                <div class="text-[10px] sm:text-[11px] font-mono text-slate-700 dark:text-slate-300 flex items-center gap-1.5 mt-0.5">
+                  <span id="meta-dims"></span>
+                  <span>·</span>
+                  <span id="meta-profile" class="flex items-center gap-1 truncate"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Color tab buttons -->
+            <div class="strict-radius grid grid-cols-2 sm:flex items-center gap-1 p-0.5 bg-black/10 dark:bg-black/40 border border-white/20 dark:border-white/10 text-xs font-mono w-full sm:w-auto flex-shrink-0">
+              <button
+                id="btn-mode-rgba"
+                type="button"
+                class="inner-radius px-3 py-1.5 sm:py-1 transition-colors text-center whitespace-nowrap font-bold text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white"
+              >
+                RGBA (0%–100%)
+              </button>
+              <button
+                id="btn-mode-cmyk"
+                type="button"
+                class="inner-radius px-3 py-1.5 sm:py-1 transition-colors text-center whitespace-nowrap font-bold bg-white/90 dark:bg-amber-500/30 text-amber-900 dark:text-amber-200 shadow-xs"
+              >
+                CMYK (0%–400%)
+              </button>
+            </div>
+          </div>
+
+          <!-- 1. Hero Card: Flex-1, commanding the vertical screen proportionally -->
+          <div class="card-glass flex-1 flex flex-col justify-center items-center p-3 sm:p-4 border border-white/40 dark:border-white/10 shadow-lg text-center space-y-2">
+            <div class="h-4 flex items-center justify-center">
+              <span id="hero-title" class="text-xs sm:text-sm uppercase font-mono tracking-wider text-slate-700 dark:text-slate-300 font-bold truncate">
+                Average Combined TAC
+              </span>
+            </div>
+
+            <div class="flex items-baseline justify-center gap-1.5">
+              <span id="hero-val" class="text-5xl sm:text-6xl font-mono font-bold text-slate-950 dark:text-white tracking-tight drop-shadow-xs">
+                0.00
+              </span>
+              <span class="text-2xl sm:text-3xl font-mono font-bold text-accent">
+                %
+              </span>
+              <span id="hero-scale" class="text-xs sm:text-sm font-mono font-medium text-slate-600 dark:text-slate-400 ml-1">
+                / 400%
+              </span>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="strict-radius w-full max-w-md mx-auto h-2.5 sm:h-3 bg-black/10 dark:bg-black/50 overflow-hidden border border-white/30 dark:border-white/10">
+              <div id="hero-progress-fill" class="strict-radius h-full transition-all duration-300 bg-gradient-to-r from-amber-500 to-rose-500" style="width: 0%;"></div>
+            </div>
+
+            <div id="hero-pixels" class="text-[11px] sm:text-xs font-mono font-medium text-slate-700 dark:text-slate-300 truncate"></div>
+          </div>
+
+          <!-- 2. Channel Breakdown Card: Flex-1, commanding vertical screen with loosened padding -->
+          <div class="card-glass flex-1 flex flex-col justify-between p-3 sm:p-4 border border-white/40 dark:border-white/10 shadow-lg gap-2.5 sm:gap-3">
+            <div class="flex items-center justify-between gap-3 sm:gap-4 pb-2.5 sm:pb-3 border-b border-black/10 dark:border-white/10">
+              <h2 class="uppercase font-mono tracking-wider text-slate-900 dark:text-slate-100 font-bold text-xs sm:text-sm whitespace-nowrap">
+                Channel Breakdown
+              </h2>
+              <span id="channel-formula" class="font-mono text-slate-600 dark:text-slate-400 text-[10px] sm:text-xs font-medium truncate text-right">
+                C + M + Y + K = Combined TAC
+              </span>
+            </div>
+
+            <!-- 4 Channels Grid -->
+            <div id="channels-grid" class="grid grid-cols-1 sm:grid-cols-4 gap-2.5 sm:gap-3.5 flex-1 items-stretch"></div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Pure vanilla JavaScript module entry -->
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+# Dependencies & Logs
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+
+# Non-essential environment, server & platform files
+.env*
+metadata.json
+bun.lock
+package.json
+package-lock.json
+vite.config.js
